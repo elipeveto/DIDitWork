@@ -11,6 +11,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.RadioButton;
@@ -55,11 +56,11 @@ public class Tic_Game extends Application
     // This is referenced for the character images
     private String[] charAvatars = {
             "Pictures/avatar1.jpg",
-            "Pictures/avatar1.jpg",
-            "Pictures/avatar1.jpg",
-            "Pictures/avatar1.jpg",
-            "Pictures/avatar1.jpg",
-            "Pictures/avatar1.jpg",
+            "Pictures/avatar2.jpg",
+            "Pictures/avatar3.jpg",
+            "Pictures/avatar4.jpg",
+            "Pictures/avatar5.jpg",
+            "Pictures/avatar6.jpeg",
     };
 
     // This is referenced for the AI avatar images based on difficulty level
@@ -67,6 +68,16 @@ public class Tic_Game extends Application
             "Pictures/beginner.jpg",
             "Pictures/intermediate.jpeg",
             "Pictures/impossible.jpeg",
+    };
+    
+    // Images for backgrounds
+    private String[] linksBackgrounds = {
+    		"Pictures/back1.jpg",
+    		"Pictures/back2.jpg",
+    		"Pictures/back3.jpg",
+    		"Pictures/back4.jpg",
+    		"Pictures/back5.jpg",
+    		"Pictures/back6.jpg"
     };
 
     // Used when there are 0 players represents index in respective image arrays for avatars
@@ -765,31 +776,49 @@ public class Tic_Game extends Application
         HBox top = new HBox(10);
         top.setAlignment(Pos.CENTER_LEFT);
         top.setTranslateX(10);
+        
         Button newGame = new Button("New Game");
         Button toMenu = new Button("Return to Menu");
+        Button selectBackground = new Button("Change");
+        ChoiceBox<Integer> test = new ChoiceBox<Integer>();
+        test.getItems().addAll(1,2,3,4,5,6);
+        test.getSelectionModel().select(0);
+        
+        selectBackground.setOnAction(e -> {
+        	BackgroundImage myBI;
+			try {
+				myBI = new BackgroundImage(new Image(new FileInputStream(linksBackgrounds[test.getValue()-1])),
+				    BackgroundRepeat.REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
+				      new BackgroundSize(1200,900, false, false, false, false));
+				borderPane.setBackground(new Background(myBI));
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        	
+        });
+        
 
         wins.setTextFill(Color.WHITE);//sets the options label to white.
         wins.setFont(Font.font("", FontWeight.BOLD, 20));
         trashTalk.setTextFill(Color.PINK);//sets the options label to white.
         trashTalk.setFont(Font.font("", FontWeight.BOLD, 20));
         forGameResults.setVisible(false);
-        forGameResults.setText("I'm here");
         forGameResults.setTranslateX(-250);
         forGameResults.setTranslateY(300);
         forGameResults.toBack();
         forGameResults.setFont(Font.font("", FontWeight.BOLD, 40));
-        //Label space = new Label(" ");
-        //space
-        top.getChildren().addAll(newGame, toMenu, wins ,trashTalk, forGameResults);
+        
+        top.getChildren().addAll(test, selectBackground, newGame, toMenu, wins ,trashTalk, forGameResults);
         borderPane.setTop(top);
 
         borderPane.setBottom(lblStatus);
         // Create a scene and place it in the stage
         borderPane.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        Scene scene = new Scene(borderPane, 1000, 900);
+        Scene scene = new Scene(borderPane, 1200, 900);
         primaryStage.setTitle("TicTacToe"); // Set the stage title
-        primaryStage.setMaxWidth(1000);
-        primaryStage.setMinWidth(1000);
+        primaryStage.setMaxWidth(1200);
+        primaryStage.setMinWidth(1200);
         primaryStage.setMaxHeight(900);
         primaryStage.setMinHeight(900);
         primaryStage.setScene(scene); // Place the scene in the stage
@@ -1427,32 +1456,33 @@ public class Tic_Game extends Application
             int doOrNot = (int)(Math.random() * 2) + 1;//flips a coin.
             int rand = (int)(Math.random() * 6) + 1;//picks a random number from 1-6 for the trash talk.
             trashTalk.setText("");//sets the trash talk text to nothing
+            trashTalk.setFont(Font.font(16));
             if(doOrNot == 1)//flips a coin to see if it will or will not mock the other player.
             switch (rand)//picks a random trash talk, and sets trashTalk to a new trash talk text.
             {
                 case 1:
                 {
-                    trashTalk.setText("Wow you call that a move?");
+                    trashTalk.setText("AI: Wow. Call that a move?");
                 }break;
                 case 2:
                 {
-                    trashTalk.setText("I saw that from a mile away.");
+                    trashTalk.setText("AI: I saw that a mile away.");
                 }break;
                 case 3:
                 {
-                    trashTalk.setText("How predictable.");
+                    trashTalk.setText("AI: How predictable.");
                 }break;
                 case 4:
                 {
-                    trashTalk.setText("You insult my intellect with that.");
+                    trashTalk.setText("AI: You insult my intellect.");
                 } break;
                 case 5:
                 {
-                    trashTalk.setText("You should just give up now.");
+                    trashTalk.setText("AI: You should just give up.");
                 }break;
                 case 6:
                 {
-                    trashTalk.setText("You really need to practice more.");
+                    trashTalk.setText("AI: You really need to practice.");
                 }break;
             }
 
@@ -1468,7 +1498,7 @@ public class Tic_Game extends Application
         
         win.toFront();
         win.setVisible(true);
-        win.setText("Congratulations! " + whoWon + " won!");
+        win.setText("Congrats! " + whoWon + " won!");
         win.setTextFill(Color.BLACK);//sets the options label to yellow.
         win.setFont(Font.font("", FontWeight.BOLD, 40));
         win.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -1527,7 +1557,7 @@ public class Tic_Game extends Application
         
         draw.toFront();
         draw.setVisible(true);
-        draw.setText("Looks like a draw folks!!");
+        draw.setText("Its a draw folks!!");
         draw.setTextFill(Color.WHITE);
         draw.setFont(Font.font("", FontWeight.BOLD, 40));
         draw.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
