@@ -13,31 +13,57 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.awt.color.*;
+
+import javax.swing.GroupLayout.Group;
 
 public class Tic_Game extends Application
 {
         // Indicate which player has a turn, initially it is the X player
         private char whoseTurn = 'X';
+        
+        // Indicates which game mode the user selects 0, 1, or 2 players
+        private int gameMode = 0; 
+        
+        // This is referenced for the character images
+        private String[] charAvatars = {
+        		"Pictures/avatar1.jpg",
+        		"Pictures/avatar1.jpg",
+        		"Pictures/avatar1.jpg",
+        		"Pictures/avatar1.jpg",
+        		"Pictures/avatar1.jpg",
+        		"Pictures/avatar1.jpg",
+        };
+        
+        // This is referenced for the AI avatar images based on difficulty level
+        private String[] automatedAvatars = {
+        		"Pictures/beginner.jpg",
+        		"Pictures/intermediate.jpeg",
+        		"Pictures/impossible.jpeg",
+        };
+        
+        // Used when there are 0 players
+        private int autoAvatar1 = 0;
+        private int autoAvatar2 = 0;
+        // Used when there is 1 player
+        private int autoAvatar = 0;
+        private int humanAvatar = 0;
+        // Used when there are 2 players
+        private int humanAvatar1 = 0;
+        private int humanAvatar2 = 0;
 
         // Create and initialize cell
         private Cell[][] cell =  new Cell[3][3];
@@ -50,11 +76,13 @@ public class Tic_Game extends Application
         private Label wins = new Label("Cat Wins: " + xWins + "  Dog Wins: " + oWins);
         private Label trashTalk = new Label("");
 
+        public boolean stop = false;
+        public boolean won = false;
         public void start(Stage primaryStage) throws FileNotFoundException {
             winAnimation(primaryStage);
             titleScreen(primaryStage);
         }
-
+//How to commit
     private void titleScreen(Stage primaryStage) throws FileNotFoundException
     {
         BorderPane borderPane = new BorderPane();
@@ -63,7 +91,7 @@ public class Tic_Game extends Application
         instructions.setTextFill(Color.ORANGE);//sets the options label to .
         instructions.setFont(Font.font("", FontWeight.BOLD, 20));//makes options bold and size 20.
         borderPane.setTop(instructions);
-        BorderPane.setAlignment(instructions, Pos.CENTER); 
+        BorderPane.setAlignment(instructions, Pos.CENTER);
 
         VBox levels = new VBox(50);
         levels.setPadding(new Insets(10,0,0,0));
@@ -73,82 +101,82 @@ public class Tic_Game extends Application
         startRow.setAlignment(Pos.CENTER);
         startRow.setPadding(new Insets(0,0,0,0));
         //borderPane.setBottom(startRow);
-        
+
         VBox automatedGame = new VBox(20);
         VBox autoVSHuman = new VBox(20);
         VBox humanVSHuman = new VBox(20);
-        
+
         levels.getChildren().addAll(gameModeRow, startRow); // start with autoVSHuman selected
-        
+
         ToggleGroup numberOfPlayers = new ToggleGroup();
         RadioButton zero = new RadioButton("0 players");
         zero.setTextFill(Color.YELLOW);//sets the options label to yellow.
         zero.setFont(Font.font("", FontWeight.BOLD, 15));//makes options bold and size 15.
-        
+
         zero.selectedProperty().addListener(new ChangeListener<Boolean>() { // Listener to change the selections to fit 0 players
             @Override
             public void changed(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
                 if (isNowSelected)
-                	levels.getChildren().add(automatedGame);
+                    levels.getChildren().add(automatedGame);
                 else if (wasPreviouslySelected)
-                	levels.getChildren().remove(automatedGame);
+                    levels.getChildren().remove(automatedGame);
             }
         });
 
         RadioButton one = new RadioButton("1 players");
         one.setTextFill(Color.YELLOW);//sets the options label to yellow.
         one.setFont(Font.font("", FontWeight.BOLD, 15));//makes options bold and size 15.
-        
+
         one.selectedProperty().addListener(new ChangeListener<Boolean>() { // Listener to change the selections to fit 1 players
             @Override
             public void changed(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
                 if (isNowSelected)
-                	levels.getChildren().add(autoVSHuman);
+                    levels.getChildren().add(autoVSHuman);
                 else if (wasPreviouslySelected)
-                	levels.getChildren().remove(autoVSHuman);
+                    levels.getChildren().remove(autoVSHuman);
             }
         });
 
         RadioButton two = new RadioButton("2 players");
         two.setTextFill(Color.YELLOW);//sets the options label to yellow.
         two.setFont(Font.font("", FontWeight.BOLD, 15));//makes options bold and size 15.
-        
+
         two.selectedProperty().addListener(new ChangeListener<Boolean>() { // Listener to change the selections to fit 2 players
             @Override
             public void changed(ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected, Boolean isNowSelected) {
                 if (isNowSelected)
-                	levels.getChildren().add(humanVSHuman);
+                    levels.getChildren().add(humanVSHuman);
                 else if (wasPreviouslySelected)
-                	levels.getChildren().remove(humanVSHuman);
+                    levels.getChildren().remove(humanVSHuman);
             }
         });
 
-        
+
         zero.setToggleGroup(numberOfPlayers);
         one.setToggleGroup(numberOfPlayers);
         two.setToggleGroup(numberOfPlayers);
         numberOfPlayers.selectToggle(one);
-        
+
         gameModeRow.getChildren().addAll(zero,one,two);
-        
+
         Button start = new Button("START");
         start.setScaleX(2);
         start.setScaleY(2);
-        
+
         startRow.getChildren().addAll(start);
         // autoVSHuman
         HBox AISelection1 = new HBox(10);
         AISelection1.setAlignment(Pos.CENTER);
         HBox AISelection2 = new HBox(10);
         AISelection2.setAlignment(Pos.CENTER);
-        
+
         automatedGame.getChildren().addAll(AISelection1, AISelection2);
-        
+
         // AI One
         Label difficulty1 = new Label("Choose the Cat \"X\" AI's Difficulty: ");
         difficulty1.setTextFill(Color.BROWN);//sets the options label to
         difficulty1.setFont(Font.font("", FontWeight.BOLD, 15));
-        
+
         ToggleGroup setAISettings1 = new ToggleGroup();
 
         RadioButton beginner1 = new RadioButton("Beginner");
@@ -165,16 +193,16 @@ public class Tic_Game extends Application
         impossible1.setTextFill(Color.BROWN);//sets the options label to
         impossible1.setFont(Font.font("", FontWeight.BOLD, 15));
         impossible1.setToggleGroup(setAISettings1);
-        
+
         setAISettings1.selectToggle(beginner1);
-        
+
         AISelection1.getChildren().addAll(difficulty1, beginner1, intermediate1, impossible1);
-        
+
         // AI One
         Label difficulty2 = new Label("Choose the Dog \"0\" AI's Difficulty: ");
         difficulty2.setTextFill(Color.BROWN);//sets the options label to
         difficulty2.setFont(Font.font("", FontWeight.BOLD, 15));
-        
+
         ToggleGroup setAISettings2 = new ToggleGroup();
 
         RadioButton beginner2 = new RadioButton("Beginner");
@@ -191,24 +219,24 @@ public class Tic_Game extends Application
         impossible2.setTextFill(Color.BROWN);//sets the options label to
         impossible2.setFont(Font.font("", FontWeight.BOLD, 15));
         impossible2.setToggleGroup(setAISettings2);
-        
+
         setAISettings2.selectToggle(beginner2);
-        
+
         AISelection2.getChildren().addAll(difficulty2, beginner2, intermediate2, impossible2);
-        
+
         // autoVSHuman
         HBox onePlayerAISelection = new HBox(10);
         onePlayerAISelection.setAlignment(Pos.CENTER);
         HBox humanAvatarSelection = new HBox(10);
         humanAvatarSelection.setAlignment(Pos.CENTER);
-        
+
         autoVSHuman.getChildren().addAll(onePlayerAISelection, humanAvatarSelection);
-        
-        // Select AI 
+
+        // Select AI
         Label difficulty = new Label("Choose the AI's Difficulty: ");
         difficulty.setTextFill(Color.BROWN);//sets the options label to
         difficulty.setFont(Font.font("", FontWeight.BOLD, 15));
-        
+
         ToggleGroup setAISettings = new ToggleGroup();
 
         RadioButton beginner = new RadioButton("Beginner");
@@ -225,111 +253,108 @@ public class Tic_Game extends Application
         impossible.setTextFill(Color.BROWN);//sets the options label to
         impossible.setFont(Font.font("", FontWeight.BOLD, 15));
         impossible.setToggleGroup(setAISettings);
-        
+
         setAISettings.selectToggle(beginner);
-        
+
         onePlayerAISelection.getChildren().addAll(difficulty, beginner, intermediate, impossible);
-        
+
         // Avatar Selection
         Label l = new Label("Choose an avatar!");
         l.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
         l.setTextFill(Color.RED);//sets the options label to
         l.setFont(Font.font("", FontWeight.BOLD, 25));
         humanAvatarSelection.setAlignment(Pos.CENTER);
-        
+
         ImageView[] images = {
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))) 	};
-        
+                new ImageView(new Image(new FileInputStream(charAvatars[0]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[1]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[2]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[3]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[4]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[5]))) 	};
+
         VBox[] avatarChoices = new VBox[6];
         RadioButton[] toggleAvatar = new RadioButton[6];
         ToggleGroup pickAvatar = new ToggleGroup();
         for (int i = 0; i < 6; i++) {
-        	toggleAvatar[i] = new RadioButton("Select " + (i + 1));
-        	toggleAvatar[i].setToggleGroup(pickAvatar);
-        	avatarChoices[i] = new VBox(2);
-        	images[i].setFitWidth(80);
-        	images[i].setFitHeight(80);
-        	avatarChoices[i].getChildren().addAll(images[i], toggleAvatar[i]);  // Need to make radio buttons for avatar choices
+            toggleAvatar[i] = new RadioButton("Select " + (i + 1));
+            toggleAvatar[i].setToggleGroup(pickAvatar);
+            avatarChoices[i] = new VBox(2);
+            images[i].setFitWidth(80);
+            images[i].setFitHeight(80);
+            avatarChoices[i].getChildren().addAll(images[i], toggleAvatar[i]);  // Need to make radio buttons for avatar choices
         }
         pickAvatar.selectToggle(toggleAvatar[0]);
-        humanAvatarSelection.getChildren().addAll( l, avatarChoices[0], avatarChoices[1], avatarChoices[2], avatarChoices[3], avatarChoices[4], avatarChoices[5]); 
-        BorderPane.setMargin(humanAvatarSelection, new Insets(0,0,10,0)); 
-        
+        humanAvatarSelection.getChildren().addAll( l, avatarChoices[0], avatarChoices[1], avatarChoices[2], avatarChoices[3], avatarChoices[4], avatarChoices[5]);
+        BorderPane.setMargin(humanAvatarSelection, new Insets(0,0,10,0));
+
         // humanVSHuman
         HBox humanPlayerSelection1 = new HBox(10);
         humanPlayerSelection1.setAlignment(Pos.CENTER);
         HBox humanPlayerSelection2 = new HBox(10);
         humanPlayerSelection2.setAlignment(Pos.CENTER);
-        
+
         humanVSHuman.getChildren().addAll(humanPlayerSelection1, humanPlayerSelection2);
-        
+
         // Avatar Selection 1
         Label l1 = new Label("Choose an avatar!");
         l1.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
         l1.setTextFill(Color.RED);//sets the options label to
         l1.setFont(Font.font("", FontWeight.BOLD, 25));
         humanPlayerSelection1.setAlignment(Pos.CENTER);
-        
+
         ImageView[] images1 = {
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))) 	};
-        
+                new ImageView(new Image(new FileInputStream(charAvatars[0]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[1]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[2]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[3]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[4]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[5]))) 	};
+
         VBox[] avatarChoices1 = new VBox[6];
         RadioButton[] toggleAvatar1 = new RadioButton[6];
         ToggleGroup pickAvatar1 = new ToggleGroup();
         for (int i = 0; i < 6; i++) {
-        	toggleAvatar1[i] = new RadioButton("Select " + (i + 1));
-        	toggleAvatar1[i].setToggleGroup(pickAvatar1);
-        	avatarChoices1[i] = new VBox(2);
-        	images1[i].setFitWidth(80);
-        	images1[i].setFitHeight(80);
-        	avatarChoices1[i].getChildren().addAll(images1[i], toggleAvatar1[i]);  // Need to make radio buttons for avatar choices
+            toggleAvatar1[i] = new RadioButton("Select " + (i + 1));
+            toggleAvatar1[i].setToggleGroup(pickAvatar1);
+            avatarChoices1[i] = new VBox(2);
+            images1[i].setFitWidth(80);
+            images1[i].setFitHeight(80);
+            avatarChoices1[i].getChildren().addAll(images1[i], toggleAvatar1[i]);  // Need to make radio buttons for avatar choices
         }
         pickAvatar1.selectToggle(toggleAvatar1[0]);
-        humanPlayerSelection1.getChildren().addAll( l1, avatarChoices1[0], avatarChoices1[1], avatarChoices1[2], avatarChoices1[3], avatarChoices1[4], avatarChoices1[5]); 
-        BorderPane.setMargin(humanPlayerSelection1, new Insets(0,0,10,0)); 
-        
+        humanPlayerSelection1.getChildren().addAll( l1, avatarChoices1[0], avatarChoices1[1], avatarChoices1[2], avatarChoices1[3], avatarChoices1[4], avatarChoices1[5]);
+        BorderPane.setMargin(humanPlayerSelection1, new Insets(0,0,10,0));
+
         // Avatar Selection 2
         Label l2 = new Label("Choose an avatar!");
         l2.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
         l2.setTextFill(Color.RED);//sets the options label to
         l2.setFont(Font.font("", FontWeight.BOLD, 25));
         humanPlayerSelection2.setAlignment(Pos.CENTER);
-        
-        ImageView[] images2 = {
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))),
-        		new ImageView(new Image(new FileInputStream("Pictures/avatar1.jpg"))) 	};
-        
+
+        ImageView[] images2 = {		// These are the images displayed for the user to choose from. 
+                new ImageView(new Image(new FileInputStream(charAvatars[0]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[1]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[2]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[3]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[4]))),
+                new ImageView(new Image(new FileInputStream(charAvatars[5]))) 	};
+
         VBox[] avatarChoices2 = new VBox[6];
         RadioButton[] toggleAvatar2 = new RadioButton[6];
         ToggleGroup pickAvatar2 = new ToggleGroup();
         for (int i = 0; i < 6; i++) {
-        	toggleAvatar2[i] = new RadioButton("Select " + (i + 1));
-        	toggleAvatar2[i].setToggleGroup(pickAvatar1);
-        	avatarChoices2[i] = new VBox(2);
-        	images2[i].setFitWidth(80);
-        	images2[i].setFitHeight(80);
-        	avatarChoices2[i].getChildren().addAll(images2[i], toggleAvatar2[i]);  // Need to make radio buttons for avatar choices
+            toggleAvatar2[i] = new RadioButton("Select " + (i + 1));
+            toggleAvatar2[i].setToggleGroup(pickAvatar2);
+            avatarChoices2[i] = new VBox(2);
+            images2[i].setFitWidth(80);
+            images2[i].setFitHeight(80);
+            avatarChoices2[i].getChildren().addAll(images2[i], toggleAvatar2[i]);  // Need to make radio buttons for avatar choices
         }
         pickAvatar2.selectToggle(toggleAvatar2[0]);
-        humanPlayerSelection2.getChildren().addAll( l2, avatarChoices2[0], avatarChoices2[1], avatarChoices2[2], avatarChoices2[3], avatarChoices2[4], avatarChoices2[5]); 
-        BorderPane.setMargin(humanPlayerSelection2, new Insets(0,0,10,0)); 
-        
-        
-        /////////////////////////////////////////////////////////////////////////////  TO HERE DANIEL 4/18/20 4:40 PM
+        humanPlayerSelection2.getChildren().addAll( l2, avatarChoices2[0], avatarChoices2[1], avatarChoices2[2], avatarChoices2[3], avatarChoices2[4], avatarChoices2[5]);
+        BorderPane.setMargin(humanPlayerSelection2, new Insets(0,0,10,0));
         
         borderPane.setCenter(levels);
 
@@ -344,6 +369,21 @@ public class Tic_Game extends Application
         primaryStage.show(); // Display the stage
 
         start.setOnAction(event -> {
+        	if (numberOfPlayers.getSelectedToggle() == zero) {
+        		gameMode = 0;
+        		autoAvatar1 = setAISettings1.getToggles().indexOf(setAISettings1.getSelectedToggle());
+        		autoAvatar2 = setAISettings2.getToggles().indexOf(setAISettings2.getSelectedToggle());
+        		
+        	} else if (numberOfPlayers.getSelectedToggle() == one) {
+        		gameMode = 1;
+        		autoAvatar = setAISettings.getToggles().indexOf(setAISettings.getSelectedToggle());
+        		humanAvatar = pickAvatar.getToggles().indexOf(pickAvatar.getSelectedToggle());
+        	}
+        	else {
+        		gameMode = 3;
+        		humanAvatar1 = pickAvatar1.getToggles().indexOf(pickAvatar1.getSelectedToggle());
+        		humanAvatar2 = pickAvatar2.getToggles().indexOf(pickAvatar2.getSelectedToggle());
+        	}
             primaryStage.setScene(null);
             try {
                 game(primaryStage);
@@ -352,22 +392,60 @@ public class Tic_Game extends Application
             }
         });
     }
-    private void game(Stage primaryStage) throws FileNotFoundException
-    {
+    private void game(Stage primaryStage) throws FileNotFoundException {
 
         // Pane to hold cell
         GridPane pane = new GridPane();
+
         for (int x = 0; x < 3; x++) {
             for (int y = 0; y < 3; y++) {
                 pane.add(cell[x][y] = new Cell(primaryStage), y, x);
-                //GridPane.setHalignment(cell[x][y], HPos.CENTER);
-                //GridPane.setValignment(cell[x][y], VPos.CENTER);
             }
         }
-        
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(pane);
+        
+        VBox rightTop = new VBox(10);
+        rightTop.setAlignment(Pos.TOP_CENTER);
+        Button toMenu = new Button("Return to Menu");
+        
+        VBox.setMargin(toMenu, new Insets(0,20,20,20));
+        
+        ImageView one;
+        ImageView two;
+        Label dog;
+        Label cat;
+        
+        if (gameMode == 0) {
+        	one = new ImageView(new Image(new FileInputStream(automatedAvatars[autoAvatar1])));
+        	two = new ImageView(new Image(new FileInputStream(automatedAvatars[autoAvatar2])));
+        	dog = new Label("AI 1: Dog");
+        	cat = new Label("AI 2: Cat");
+        } else if (gameMode == 1) {
+        	one = new ImageView(new Image(new FileInputStream(automatedAvatars[autoAvatar])));
+        	two = new ImageView(new Image(new FileInputStream(charAvatars[humanAvatar])));
+        	dog = new Label("AI: Dog");
+        	cat = new Label("Human: Cat");
+        } else {
+        	one = new ImageView(new Image(new FileInputStream(charAvatars[humanAvatar1])));
+        	two = new ImageView(new Image(new FileInputStream(charAvatars[humanAvatar2])));
+        	dog = new Label("Human 1: Dog");
+        	cat = new Label("Human 2: Cat");
+        }
+        one.setFitHeight(100);
+        one.setFitWidth(100);
+        two.setFitHeight(100);
+        two.setFitWidth(100);
+        
+        dog.setTextFill(Color.WHITE);//sets the options label to
+        dog.setFont(Font.font("", FontWeight.BOLD, 15));
+        cat.setTextFill(Color.WHITE);//sets the options label to
+        cat.setFont(Font.font("", FontWeight.BOLD, 15));
+        
+        rightTop.getChildren().addAll(toMenu, one, dog, two, cat);
+        borderPane.setRight(rightTop);
+        
         lblStatus.setTextFill(Color.WHITE);//sets the options label to white.
         lblStatus.setFont(Font.font("", FontWeight.BOLD, 30));//makes options bold and size 15.
 
@@ -379,11 +457,11 @@ public class Tic_Game extends Application
         trashTalk.setFont(Font.font("", FontWeight.BOLD, 20));
         top.getChildren().addAll(newGame, wins,trashTalk);
         borderPane.setTop(top);
-        
+
         borderPane.setBottom(lblStatus);
         // Create a scene and place it in the stage
         borderPane.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-        Scene scene = new Scene(borderPane, 800, 800);
+        Scene scene = new Scene(borderPane, 1000, 800);
         primaryStage.setTitle("TicTacToe"); // Set the stage title
         primaryStage.setMaxWidth(800);
         primaryStage.setMinWidth(800);
@@ -392,11 +470,21 @@ public class Tic_Game extends Application
         primaryStage.setScene(scene); // Place the scene in the stage
         primaryStage.show(); // Display the stage
 
-        newGame.setOnAction(event -> {
+        newGame.setOnAction(event -> { // This resets the game for the same game mode
             primaryStage.setScene(null);
             try {
-
-                game(primaryStage);
+                whoseTurn = 'X';
+                game(primaryStage); 
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
+        
+        toMenu.setOnAction(event -> { // This takes the use back to the menu
+            primaryStage.setScene(null);
+            try {
+                whoseTurn = 'X';
+                start(primaryStage); 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -453,10 +541,13 @@ public class Tic_Game extends Application
             public Cell(Stage primaryStage)
             {
                 setStyle("-fx-border-color: RED");
-                this.setPrefSize(800, 800);
+                this.setPrefSize(800, 850);
                 this.setOnMouseClicked(e -> {
                     try {
                         handleMouseClick(primaryStage);
+                        if(whoseTurn == 'O') {
+                            AI(primaryStage, token);
+                        }
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
@@ -481,7 +572,6 @@ public class Tic_Game extends Application
                     cat.fitWidthProperty().bind(catX.heightProperty());
                     catX.getChildren().add(cat);
                     catX.setPrefSize(primaryStage.getWidth()/4, primaryStage.getHeight()/4);
-                    //catX.setPadding(new Insets(10,10,10,10));
                     this.getChildren().add(catX);
                 }
                 else if (token == 'O')
@@ -502,38 +592,485 @@ public class Tic_Game extends Application
                 if (token == ' ' && whoseTurn != ' ') {
                     setToken(whoseTurn, primaryStage); // Set token in the cell
 
-                    // Check game status
-                    if (isWon(whoseTurn)) {
-                        if(whoseTurn == 'X')
-                        {
-                            lblStatus.setText("Cats won! The game is over");
-                            wins.setText("Cat Wins: " + ++xWins + "  Dog Wins: " + oWins);
-                        }
-                        if(whoseTurn == 'O')
-                        {
-                            lblStatus.setText("Dogs won! The game is over");
-                            wins.setText("Cat Wins: " + xWins + "  Dog Wins: " + ++oWins);
-                        }
-                        whoseTurn = ' '; // Game is over
+                    whoseTurn(primaryStage);
+
+                }
+            }
+
+            public void whoseTurn(Stage primaryStage) throws FileNotFoundException {
+                // Check game status
+                if (isWon(whoseTurn))
+                {
+                    if(whoseTurn == 'X')
+                    {
+                        lblStatus.setText("Cats won! The game is over");
+                        wins.setText("Cat Wins: " + ++xWins + "  Dog Wins: " + oWins);
                     }
-                    else if (isFull()) {
-                        lblStatus.setText("Draw! The game is over");
-                        whoseTurn = ' '; // Game is over
+                    if(whoseTurn == 'O')
+                    {
+                        lblStatus.setText("Dogs won! The game is over");
+                        wins.setText("Cat Wins: " + xWins + "  Dog Wins: " + ++oWins);
                     }
-                    else {
-                        // Change the turn
-                        whoseTurn = (whoseTurn == 'X') ? 'O' : 'X';
-                        // Display whose turn
-                        theTrash();
-                        if(whoseTurn == 'X')
-                            lblStatus.setText("Cats turn.");
-                        if(whoseTurn == 'O')
-                            lblStatus.setText("Dogs turn.");
+                    whoseTurn = ' '; // Game is over
+                }
+                else if (isFull()) {
+                    lblStatus.setText("Draw! The game is over");
+
+                    whoseTurn = ' '; // Game is over
+                }
+                else
+                    {
+                    // Change the turn
+                    if(whoseTurn == 'O')
+                        whoseTurn = 'X';
+                    else if(whoseTurn == 'X')
+                        whoseTurn = 'O';
+
+                    // Display whose turn
+                    theTrash();
+                    if(whoseTurn == 'X')
+                        lblStatus.setText("Cats turn.");
+                    else if(whoseTurn == 'O')
+                    {
+                        lblStatus.setText("Dogs turn.");
+
                     }
                 }
             }
-        }
 
+            private void AI(Stage primaryStage, char token) throws FileNotFoundException
+            {
+                    stop = false;
+                    won = false;
+                    if (whoseTurn != ' ')
+                        AIWinCheck(primaryStage, token);
+
+
+                    if (whoseTurn != ' ' && won == false)
+                    {
+                    AIStopCheck(primaryStage, token);
+                    if(stop == false) {
+                        AINormalMove(primaryStage, token);
+                    }
+                    }
+            }
+
+            private void AINormalMove(Stage primaryStage, char token) throws FileNotFoundException
+            {
+                System.out.println("NORMAL");
+                if(token == 'O')
+                token = 'X';
+                else if(token == 'X')
+                token = 'O';
+
+
+                char topCenter = (cell[0][1].getToken());
+                char leftCenter = (cell[1][0].getToken());
+                char rightCenter = (cell[1][2].getToken());
+                char bottomCenter = (cell[2][1].getToken());
+
+                char topLeft = (cell[0][0].getToken());
+                char topRight = (cell[0][2].getToken());
+                char bottomLeft = (cell[2][0].getToken());
+                char bottomRight = (cell[2][2].getToken());
+
+                System.out.println("Left " + leftCenter + " Right " + rightCenter);
+                if(cell[1][1].getToken() == ' ')//first move center if possible
+                {
+                    cell[1][1].setToken(token, primaryStage);
+                    whoseTurn(primaryStage);
+                }
+
+                //if the center was used and it has not taken the top bottom left or right center spots then go with one of those.
+                else if(cell[1][1].getToken() == token && true == (token != topCenter && token != leftCenter && token != rightCenter && token != bottomCenter))
+                {
+                    if(topCenter == ' ' && bottomCenter == ' ') //if top is free go their and stop
+                    {
+                        System.out.println("HEYYY");
+                        cell[0][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(leftCenter == ' ' && rightCenter == ' ')//if top center is not free go left center and the next 2 else if continue this process to the other side centers.
+                    {
+                        System.out.println("YYYYYYY");
+                        cell[1][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(bottomCenter != ' ' && bottomCenter != token && rightCenter != ' ' && rightCenter != token && bottomRight == ' ')
+                    {
+                        cell[2][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+
+                    else if(topLeft == ' ')
+                    {
+                        System.out.println("NOWWWWWWWWW");
+
+                        cell[0][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(leftCenter == ' ')
+                    {
+                        cell[1][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(bottomCenter == ' ')
+                    {
+                        cell[2][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(topCenter == ' ')
+                    {
+                        cell[0][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+
+                }
+                else if(cell[1][1].getToken() == token && false == (token != topCenter && token != leftCenter && token != rightCenter && token != bottomCenter))
+                {
+
+
+                    if(topLeft == ' ')
+                    {
+                        cell[0][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(topRight == ' ')
+                    {
+                        cell[0][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(bottomLeft == ' ')
+                    {
+                        cell[2][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(bottomRight == ' ')
+                    {
+                        cell[2][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(leftCenter == ' ')
+                    {
+                        cell[1][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(rightCenter == ' ')
+                    {
+                        cell[1][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(topCenter == ' ')
+                    {
+                        cell[0][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else if(bottomCenter == ' ')
+                    {
+                        cell[2][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                }
+                else if(cell[1][1].getToken() != token && topLeft != token)
+                {
+                    cell[0][0].setToken(token, primaryStage);
+                    whoseTurn(primaryStage);
+                }
+
+                else if(cell[0][0].getToken() == token && bottomRight == ' ' && bottomRight != token)
+                {
+                    if(topRight == ' ' && topCenter == ' ')
+                    {
+                        cell[2][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                    else
+                    {
+                        cell[0][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                    }
+                }
+                //System.out.println("WHY" + cell[0][0].getToken() + "_____ " + bottomRight + "== " + token);
+            }
+            private void AIWinCheck(Stage primaryStage, char token) throws FileNotFoundException
+            {
+
+               token = whoseTurn;
+                for (int i = 0; i < 3; i++)
+                {
+                    char one = (cell[i][0].getToken());
+                    char two = (cell[i][1].getToken());
+                    char three = (cell[i][2].getToken());
+
+                    if(one == token && two == token && (three == ' '))
+                    {
+                        cell[i][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                        break;
+                    }
+                    else if(one == token && two == ' ' && three == token)
+                    {
+                        cell[i][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                        break;
+                    }
+                    else if(one == ' ' && two == token && three == token)
+                    {
+                        cell[i][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                        break;
+                    }
+                }
+                    if(won == false)
+                    for (int i = 0; i < 3; i++)
+                    {
+
+                        char one = (cell[0][i].getToken());
+                        char two = (cell[1][i].getToken());
+                        char three = (cell[2][i].getToken());
+
+                        if(one == token && two == token && three == ' ')
+                        {
+                            cell[2][i].setToken(token, primaryStage);
+                            whoseTurn(primaryStage);
+                            won = true;
+                            break;
+                        }
+                        else if(one == token && two == ' ' && three == token)
+                        {
+                            cell[1][i].setToken(token, primaryStage);
+                            whoseTurn(primaryStage);
+                            won = true;
+                            break;
+                        }
+                        else if(one == ' ' && two == token && three == token)
+                        {
+                            cell[0][i].setToken(token, primaryStage);
+                            whoseTurn(primaryStage);
+                            won = true;
+                            break;
+                        }
+                    }
+
+                char lCrossOne = (cell[0][0].getToken());
+                char lCrossTwo = (cell[1][1].getToken());
+                char lCrossThree = (cell[2][2].getToken());
+
+                if(won == false) {
+                    if (lCrossOne == token && lCrossTwo == token && lCrossThree == ' ') {
+                        cell[2][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                    } else if (lCrossOne == token && lCrossTwo == ' ' && lCrossThree == token) {
+                        cell[1][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                    } else if (lCrossOne == ' ' && lCrossTwo == token && lCrossThree == token) {
+                        cell[0][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                    }
+                }
+                char rCrossOne = (cell[0][2].getToken());
+                char rCrossTwo = (cell[1][1].getToken());
+                char rCrossThree = (cell[2][0].getToken());
+
+                if(won == false) {
+                    if (rCrossOne == token && rCrossTwo == token && rCrossThree == ' ') {
+                        cell[2][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                    } else if (lCrossOne == token && lCrossTwo == ' ' && lCrossThree == token) {
+                        cell[1][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                    } else if (lCrossOne == ' ' && lCrossTwo == token && lCrossThree == token) {
+                        cell[0][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        won = true;
+                    }
+                }
+            }
+
+            private void AIStopCheck(Stage primaryStage, char token) throws FileNotFoundException
+            {
+                //this if and if else swap token to check the opponents tokens on the board
+               token = whoseTurn;
+
+                if(token == 'O')
+                    token = 'X';
+                else if(token == 'X')
+                    token = 'O';
+                for (int i = 0; i < 3; i++)
+                {
+                    char one = (cell[i][0].getToken());
+                    char two = (cell[i][1].getToken());
+                    char three = (cell[i][2].getToken());
+
+                    if(one == token && two == token && (three == ' '))
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+                        cell[i][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                        break;
+                    }
+                    else if(one == token && two == ' ' && three == token)
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[i][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+
+                        break;
+                    }
+                    else if(one == ' ' && two == token && three == token)
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[i][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                        break;
+                    }
+                }
+
+                if(stop != true)
+                    for (int i = 0; i < 3; i++)
+                    {
+
+                        char one = (cell[0][i].getToken());
+                        char two = (cell[1][i].getToken());
+                        char three = (cell[2][i].getToken());
+
+                        if(one == token && two == token && three == ' ')
+                        {
+                            if(token == 'O')
+                                token = 'X';
+                            else if(token == 'X')
+                                token = 'O';
+
+                            cell[2][i].setToken(token, primaryStage);
+                            whoseTurn(primaryStage);
+                            stop = true;
+                            break;
+                        }
+                        else if(one == token && two == ' ' && three == token)
+                        {
+                            if(token == 'O')
+                                token = 'X';
+                            else if(token == 'X')
+                                token = 'O';
+
+                            cell[1][i].setToken(token, primaryStage);
+                            whoseTurn(primaryStage);
+                            stop = true;
+                            break;
+                        }
+                        else if(one == ' ' && two == token && three == token)
+                        {
+                            if(token == 'O')
+                                token = 'X';
+                            else if(token == 'X')
+                                token = 'O';
+
+                            cell[0][i].setToken(token, primaryStage);
+                            whoseTurn(primaryStage);
+                            stop = true;
+                            break;
+                        }
+                    }
+
+                char lCrossOne = (cell[0][0].getToken());
+                char lCrossTwo = (cell[1][1].getToken());
+                char lCrossThree = (cell[2][2].getToken());
+
+                if(stop != true)
+                    if(lCrossOne == token && lCrossTwo == token && lCrossThree == ' ')
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[2][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                    }
+                    else if(lCrossOne == token && lCrossTwo == ' ' && lCrossThree == token)
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[1][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                    }
+                    else if(lCrossOne == ' ' && lCrossTwo == token && lCrossThree == token)
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[0][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                    }
+
+                char rCrossOne = (cell[0][2].getToken());
+                char rCrossTwo = (cell[1][1].getToken());
+                char rCrossThree = (cell[2][0].getToken());
+                if(stop != true)
+                    if(rCrossOne == token && rCrossTwo == token && rCrossThree == ' ')
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[2][0].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                    }
+                    else if(rCrossOne == token && rCrossTwo == ' ' && rCrossThree == token)
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[1][1].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                    }
+                    else if(rCrossOne == ' ' && rCrossTwo == token && rCrossThree == token)
+                    {
+                        if(token == 'O')
+                            token = 'X';
+                        else if(token == 'X')
+                            token = 'O';
+
+                        cell[0][2].setToken(token, primaryStage);
+                        whoseTurn(primaryStage);
+                        stop = true;
+                    }
+            }
 
         private void theTrash()
         {
@@ -567,6 +1104,8 @@ public class Tic_Game extends Application
             }
 
         }
+            }
+
         /*
         get these methods below to work.
          */
@@ -595,6 +1134,17 @@ public class Tic_Game extends Application
         lose.setTextFill(Color.RED);
         lose.setFont(Font.font("", FontWeight.BOLD, 40));
         lose.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+        
+        PathTransition pathTransition = new PathTransition();
+        pathTransition.setDuration(Duration.millis(5000));
+
+        Node w = lose;
+        Path path = new Path();//Defines a Path for the PathTransition
+        path.getElements().add(new MoveTo(primaryStage.getWidth()/2,primaryStage.getHeight()/2));//defines where the path goes to.
+        path.getElements().add(new LineTo(primaryStage.getWidth(),primaryStage.getHeight()));//defines the line to follow.
+        pathTransition.setNode(w);
+        pathTransition.setPath(path);
+        pathTransition.play();
 
     }
 
@@ -604,6 +1154,7 @@ public class Tic_Game extends Application
         draw.setTextFill(Color.WHITE);
         draw.setFont(Font.font("", FontWeight.BOLD, 40));
         draw.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
+
     }
     public static void main(String[] args) {
 		launch(args);
