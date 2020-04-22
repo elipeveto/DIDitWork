@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 
 public class Tic_Game extends Application
 {
-    public static void main(String[] args)//launches the program.
+    public static void main(String[] args) //launches the program.
     {
         Application.launch(args);
     }
@@ -49,7 +49,7 @@ public class Tic_Game extends Application
     private int gameMode = 0;
 
     // This is referenced for the character images
-    private String[] charAvatars = {
+    private String[] charAvatars = { 
             "Pictures/avatar1.jpg",
             "Pictures/avatar2.jpg",
             "Pictures/avatar3.jpg",
@@ -178,7 +178,7 @@ public class Tic_Game extends Application
 
         startRow.getChildren().addAll(start);
 
-        // autoVSHuman
+        // autoVSauto
         HBox AISelection1 = new HBox(10); // Pane for AI 1 settings
         AISelection1.setAlignment(Pos.CENTER);
         HBox AISelection2 = new HBox(10); // Pane for AI 2 settings
@@ -212,7 +212,7 @@ public class Tic_Game extends Application
 
         AISelection1.getChildren().addAll(difficulty1, beginner1, intermediate1, impossible1);
 
-        // AI One
+        // AI Two
         Label difficulty2 = new Label("Choose the Dog \"0\" AI's Difficulty: "); // Label for directions for user
         difficulty2.setTextFill(Color.BROWN);
         difficulty2.setFont(Font.font("", FontWeight.BOLD, 15));
@@ -385,42 +385,34 @@ public class Tic_Game extends Application
         start.setOnAction(event -> { // Event that fires when the user clicks the star button (begin the game)
 
             if (numberOfPlayers.getSelectedToggle() == zero) {
-                gameMode = 0;
-
-                if(beginner1.isSelected())
-                    dif1 = 0;
-                if(beginner2.isSelected())
-                    dif2 = 0;
-                if(intermediate1.isSelected())
-                    dif1 = 1;
-                if(intermediate2.isSelected())
-                    dif2 = 1;
-                if(impossible1.isSelected())
-                    dif1 = 2;
-                if(impossible2.isSelected())
-                    dif2 = 2;
-
-                autoAvatar1 = setAISettings1.getToggles().indexOf(setAISettings1.getSelectedToggle()); // Sets the variable to the selected index
+                
+            	gameMode = 0;
+            	
+            	// Sets the variable to the selected index
+                autoAvatar1 = setAISettings1.getToggles().indexOf(setAISettings1.getSelectedToggle()); 
                 autoAvatar2 = setAISettings2.getToggles().indexOf(setAISettings2.getSelectedToggle());
+                
+                // Sets the variables to the selected AI difficulty: 1, beginner, 2, intermediate, 3, impossible
+                dif1 = autoAvatar1; 
+                dif2 = autoAvatar2;
 
 
             } else if (numberOfPlayers.getSelectedToggle() == one) {
                 gameMode = 1;
 
-                if(beginner.isSelected())
-                    currentDifficulty = 0;
-                else if(intermediate.isSelected())
-                    currentDifficulty = 1;
-                else if(impossible.isSelected())
-                    currentDifficulty = 2;
                 autoAvatar = setAISettings.getToggles().indexOf(setAISettings.getSelectedToggle()); // Sets the variable to the selected index
                 humanAvatar = pickAvatar.getToggles().indexOf(pickAvatar.getSelectedToggle());
+                
+                // Sets the variable to the selected AI difficulty: 1, beginner, 2, intermediate, 3, impossible
+                currentDifficulty = autoAvatar;
             }
             else {
                 gameMode = 3;
+                
                 humanAvatar1 = pickAvatar1.getToggles().indexOf(pickAvatar1.getSelectedToggle()); // Sets the variable to the selected index
                 humanAvatar2 = pickAvatar2.getToggles().indexOf(pickAvatar2.getSelectedToggle());
             }
+            
             primaryStage.setScene(null);
             try {
                 game(primaryStage); // Initiates the game method
@@ -629,12 +621,12 @@ public class Tic_Game extends Application
 
         }
 
-        public char getToken()
+        public char getToken() // Gets the token
         {
             return token;
         }//allows for access to what the token is at the given cell.
 
-        public void setToken(char c, Stage primaryStage) throws FileNotFoundException
+        public void setToken(char c, Stage primaryStage) throws FileNotFoundException // Sets the token
         {
             token = c;//sets token.
 
@@ -659,7 +651,7 @@ public class Tic_Game extends Application
                 this.getChildren().add(dogX);
             }
         }
-        private void handleMouseClick(Stage primaryStage) throws FileNotFoundException  //Handles the mouse click.
+        private void handleMouseClick(Stage primaryStage) throws FileNotFoundException  // Handles the mouse click.
         {
             // If cell is empty and game is not over
             if (token == ' ' && whoseTurn != ' ') {
@@ -669,7 +661,7 @@ public class Tic_Game extends Application
             }
         }
 
-        public void whoseTurn(Stage primaryStage) throws FileNotFoundException
+        public void whoseTurn(Stage primaryStage) throws FileNotFoundException // Moves the turn and checks ending conditions
         {
             // Check game status
             if (isWon(whoseTurn))//if someone won continue.
@@ -727,7 +719,7 @@ public class Tic_Game extends Application
                 }
                 else if (dif1 == 1)//intermediate difficulty. Picks a random free spot, unless the opponent has 2 in a line.
                 {
-                    stop = false;//resets stop incase AIStopCheck stopped a move last move.
+                    stop = false;//resets stop in case AIStopCheck stopped a move last move.
                     AIStopCheck(primaryStage, token);
                     if (stop == false) //does not move again if it already stopped a move.
                         randomMove(primaryStage, token);//does a random move.
@@ -812,236 +804,235 @@ public class Tic_Game extends Application
             }
         }
     }
-        private void randomMove(Stage primaryStage, char token) throws FileNotFoundException
+    private void randomMove(Stage primaryStage, char token) throws FileNotFoundException
+    {
+        //the if, else if swaps it to the AI's token.
+    	if(token == 'O')
+            token = 'X';
+        else if(token == 'X')
+            token = 'O';
+        boolean moved = false;
+        while(moved == false)
         {
-            //the if, else if swaps it to the AI's token.
-            if(token == 'O')
-                token = 'X';
-            else if(token == 'X')
-                token = 'O';
-            boolean moved = false;
-            while(moved == false)
-            {
-                int x = (int)(Math.random() * 3);
-                int y = (int)(Math.random() * 3);
-                char check = cell[x][y].getToken();
-                if(check == ' ') {
-                    cell[x][y].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                    moved = true;
-                }
+        	int x = (int)(Math.random() * 3);
+            int y = (int)(Math.random() * 3);
+            char check = cell[x][y].getToken();
+            if(check == ' ') {
+                cell[x][y].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+                moved = true;
             }
         }
+    }
 
 
-        private void AINormalMove(Stage primaryStage, char token) throws FileNotFoundException//This method does normal moves if the AIWinCheck and AIStopCheck are not needed.
+    private void AINormalMove(Stage primaryStage, char token) throws FileNotFoundException//This method does normal moves if the AIWinCheck and AIStopCheck are not needed.
+    {
+    	//the if, else if swaps it back to the AI's token.
+    	if(token == 'O')
+    		token = 'X';
+        else if(token == 'X')
+            token = 'O';
+
+        //The next 8 chars collect the state of the board.
+        char topCenter = (cell[0][1].getToken());
+        char leftCenter = (cell[1][0].getToken());
+        char rightCenter = (cell[1][2].getToken());
+        char bottomCenter = (cell[2][1].getToken());
+
+        char topLeft = (cell[0][0].getToken());
+        char topRight = (cell[0][2].getToken());
+        char bottomLeft = (cell[2][0].getToken());
+        char bottomRight = (cell[2][2].getToken());
+
+        if(cell[1][1].getToken() == ' ')//first move center if possible.
         {
-            //the if, else if swaps it back to the AI's token.
-            if(token == 'O')
-                token = 'X';
-            else if(token == 'X')
-                token = 'O';
+            //takes the center and runs whoseTurn.
+            cell[1][1].setToken(token, primaryStage);
+            whoseTurn(primaryStage);
+        }
 
-            //The next 8 chars collect the state of the board.
-            char topCenter = (cell[0][1].getToken());
-            char leftCenter = (cell[1][0].getToken());
-            char rightCenter = (cell[1][2].getToken());
-            char bottomCenter = (cell[2][1].getToken());
-
-            char topLeft = (cell[0][0].getToken());
-            char topRight = (cell[0][2].getToken());
-            char bottomLeft = (cell[2][0].getToken());
-            char bottomRight = (cell[2][2].getToken());
-
-            if(cell[1][1].getToken() == ' ')//first move center if possible.
+        //if the center was taken by the AI and it has not taken the top bottom left or right center spots then go with one of those.
+        else if(cell[1][1].getToken() == token && true == (token != topCenter && token != leftCenter && token != rightCenter && token != bottomCenter))
+        {
+            if(topCenter == ' ' && bottomCenter == ' ') //if top center and bottom center are open take the top spot.
             {
-                //takes the center and runs whoseTurn.
-                cell[1][1].setToken(token, primaryStage);
+                cell[0][1].setToken(token, primaryStage);
                 whoseTurn(primaryStage);
             }
-
-            //if the center was taken by the AI and it has not taken the top bottom left or right center spots then go with one of those.
-            else if(cell[1][1].getToken() == token && true == (token != topCenter && token != leftCenter && token != rightCenter && token != bottomCenter))
+            else if(leftCenter == ' ' && rightCenter == ' ')//if left center and right center are free take the left center.
             {
-                if(topCenter == ' ' && bottomCenter == ' ') //if top center and bottom center are open take the top spot.
-                {
-                    cell[0][1].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(leftCenter == ' ' && rightCenter == ' ')//if left center and right center are free take the left center.
-                {
-                    cell[1][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(bottomCenter != ' ' && bottomCenter != token && rightCenter != ' ' && rightCenter != token && bottomRight == ' ')//if the bottom center and right center is taken by the opponent take the bottom right.
-                {
-                    cell[2][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(topLeft == ' ')//all else fails take the top left if its open.
-                {
-                    cell[0][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(leftCenter == ' ')//all else fails take the left center if its open.
-                {
-                    cell[1][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(topRight == ' ')//all else fails take the top right if its open.
-                {
-                    cell[0][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
+                cell[1][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
             }
-            //if the center was taken by the AI and it has taken the top bottom left or right center spots then continue.
-            else if(cell[1][1].getToken() == token && false == (token != topCenter && token != leftCenter && token != rightCenter && token != bottomCenter))
+            else if(bottomCenter != ' ' && bottomCenter != token && rightCenter != ' ' && rightCenter != token && bottomRight == ' ')//if the bottom center and right center is taken by the opponent take the bottom right.
             {
-                //stops a way it can lose I found.
-                if(rightCenter != ' ' && rightCenter != token && topCenter != ' ' && topCenter != token && bottomLeft != ' ' && bottomLeft != token)
-                {
-                    cell[2][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                //stops a way it can lose I found.
-                else if(topLeft != ' ' && topLeft != token && bottomCenter != ' ' && bottomCenter != token && rightCenter != ' ' && rightCenter != token)
-                {
-                    cell[2][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                //stops a way it can lose I found.
-                else if(topRight != ' ' && topRight != token && bottomCenter != ' ' && bottomCenter != token && leftCenter != ' ' && leftCenter != token)
-                {
-                    cell[2][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                //Basically this happens towards the end, and this takes a spot if its open.
-                else if(topLeft == ' ')
-                {
-                    cell[0][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(topRight == ' ')
-                {
-                    cell[0][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(bottomLeft == ' ')
-                {
-                    cell[2][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(bottomRight == ' ')
-                {
-                    cell[2][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(leftCenter == ' ')
-                {
-                    cell[1][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(rightCenter == ' ')
-                {
-                    cell[1][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(topCenter == ' ')
-                {
-                    cell[0][1].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(bottomCenter == ' ')
-                {
-                    cell[2][1].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
+                cell[2][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
             }
-            else if(cell[1][1].getToken() != token && topLeft != token)//if the center was taken by the opponent, and the top left is not taken yet take the top left.
+            else if(topLeft == ' ')//all else fails take the top left if its open.
             {
                 cell[0][0].setToken(token, primaryStage);
                 whoseTurn(primaryStage);
             }
-
-            else if(cell[0][0].getToken() == token && bottomRight != ' ' && bottomRight != token)//if the Ai has the top left, and the bottom right is taken by the opponent continue here.
+            else if(leftCenter == ' ')//all else fails take the left center if its open.
             {
-                if(topRight == ' ' && topCenter == ' ')//if top right and top center are open take the top right.
-                {
-                    cell[0][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(topCenter == ' ')//if all else fails take top center if its open.
-                {
-                    cell[0][1].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
-                else if(leftCenter == ' ')//if all else fails take left center if its open.
-                {
-                    cell[1][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                }
+                cell[1][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(topRight == ' ')//all else fails take the top right if its open.
+            {
+                cell[0][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
             }
         }
-        private void AIWinCheck(Stage primaryStage, char token) throws FileNotFoundException//This method wins the game if the AI has 2 in a line and can place the third.
+        //if the center was taken by the AI and it has taken the top bottom left or right center spots then continue.
+        else if(cell[1][1].getToken() == token && false == (token != topCenter && token != leftCenter && token != rightCenter && token != bottomCenter))
         {
-            token = whoseTurn;//sets token to the AI's token.
-            for (int i = 0; i < 3; i++)//This checks for 2 in a line Horizontally. If found it takes the 3rd spot and wins.
+            //stops a way it can lose I found.
+            if(rightCenter != ' ' && rightCenter != token && topCenter != ' ' && topCenter != token && bottomLeft != ' ' && bottomLeft != token)
             {
-                char one = (cell[i][0].getToken());
-                char two = (cell[i][1].getToken());
-                char three = (cell[i][2].getToken());
-
-                if(one == token && two == token && (three == ' '))
-                {
-                    cell[i][2].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                    won = true;//sets won to true to let the rest of the method know not to make another move.(same for the rest of these in the method)
-                    break;
-                }
-                else if(one == token && two == ' ' && three == token)
-                {
-                    cell[i][1].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                    won = true;
-                    break;
-                }
-                else if(one == ' ' && two == token && three == token)
-                {
-                    cell[i][0].setToken(token, primaryStage);
-                    whoseTurn(primaryStage);
-                    won = true;
-                    break;
-                }
+                cell[2][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
             }
-            if(won == false)//if the AI has not won continue.
-                for (int i = 0; i < 3; i++)//Checks for 2 in a line vertically, and if found it takes the 3rd spot and wins.
-                {
-                    char one = (cell[0][i].getToken());
-                    char two = (cell[1][i].getToken());
-                    char three = (cell[2][i].getToken());
+            //stops a way it can lose I found.
+            else if(topLeft != ' ' && topLeft != token && bottomCenter != ' ' && bottomCenter != token && rightCenter != ' ' && rightCenter != token)
+            {
+                cell[2][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            //stops a way it can lose I found.
+            else if(topRight != ' ' && topRight != token && bottomCenter != ' ' && bottomCenter != token && leftCenter != ' ' && leftCenter != token)
+            {
+                cell[2][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            //Basically this happens towards the end, and this takes a spot if its open.
+            else if(topLeft == ' ')
+            {
+                cell[0][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(topRight == ' ')
+            {
+                cell[0][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(bottomLeft == ' ')
+            {
+                cell[2][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(bottomRight == ' ')
+            {
+                cell[2][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(leftCenter == ' ')
+            {
+                cell[1][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(rightCenter == ' ')
+            {
+                cell[1][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(topCenter == ' ')
+            {
+                cell[0][1].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(bottomCenter == ' ')
+            {
+                cell[2][1].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+        }
+        else if(cell[1][1].getToken() != token && topLeft != token)//if the center was taken by the opponent, and the top left is not taken yet take the top left.
+        {
+            cell[0][0].setToken(token, primaryStage);
+            whoseTurn(primaryStage);
+        }
+        else if(cell[0][0].getToken() == token && bottomRight != ' ' && bottomRight != token)//if the Ai has the top left, and the bottom right is taken by the opponent continue here.
+        {
+            if(topRight == ' ' && topCenter == ' ')//if top right and top center are open take the top right.
+            {
+                cell[0][2].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(topCenter == ' ')//if all else fails take top center if its open.
+            {
+                cell[0][1].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+            else if(leftCenter == ' ')//if all else fails take left center if its open.
+            {
+                cell[1][0].setToken(token, primaryStage);
+                whoseTurn(primaryStage);
+            }
+        }
+    }
+    private void AIWinCheck(Stage primaryStage, char token) throws FileNotFoundException//This method wins the game if the AI has 2 in a line and can place the third.
+    {
+        token = whoseTurn;//sets token to the AI's token.
+        for (int i = 0; i < 3; i++)//This checks for 2 in a line Horizontally. If found it takes the 3rd spot and wins.
+        {
+            char one = (cell[i][0].getToken());
+            char two = (cell[i][1].getToken());
+            char three = (cell[i][2].getToken());
 
-                    if(one == token && two == token && three == ' ')
-                    {
-                        cell[2][i].setToken(token, primaryStage);
-                        whoseTurn(primaryStage);
-                        won = true;
-                        break;
-                    }
-                    else if(one == token && two == ' ' && three == token)
-                    {
-                        cell[1][i].setToken(token, primaryStage);
-                        whoseTurn(primaryStage);
-                        won = true;
-                        break;
-                    }
-                    else if(one == ' ' && two == token && three == token)
-                    {
-                        cell[0][i].setToken(token, primaryStage);
-                        whoseTurn(primaryStage);
-                        won = true;
-                        break;
-                    }
-                }
+            if(one == token && two == token && (three == ' '))
+            {
+            	cell[i][2].setToken(token, primaryStage);
+            	whoseTurn(primaryStage);
+            	won = true;//sets won to true to let the rest of the method know not to make another move.(same for the rest of these in the method)
+            	break;
+            }
+            else if(one == token && two == ' ' && three == token)
+            {
+            	cell[i][1].setToken(token, primaryStage);
+            	whoseTurn(primaryStage);
+            	won = true;
+            	break;
+            }
+            else if(one == ' ' && two == token && three == token)
+            {
+            	cell[i][0].setToken(token, primaryStage);
+            	whoseTurn(primaryStage);
+            	won = true;
+            	break;
+            }
+        }
+        if(won == false)//if the AI has not won continue.
+        	for (int i = 0; i < 3; i++)//Checks for 2 in a line vertically, and if found it takes the 3rd spot and wins.
+        	{
+        		char one = (cell[0][i].getToken());
+        		char two = (cell[1][i].getToken());
+        		char three = (cell[2][i].getToken());
+
+        		if(one == token && two == token && three == ' ')
+        		{
+        			cell[2][i].setToken(token, primaryStage);
+        			whoseTurn(primaryStage);
+        			won = true;
+        			break;
+        		}
+        		else if(one == token && two == ' ' && three == token)
+        		{
+        			cell[1][i].setToken(token, primaryStage);
+        			whoseTurn(primaryStage);
+        			won = true;
+        			break;
+        		}
+        		else if(one == ' ' && two == token && three == token)
+        		{
+        			cell[0][i].setToken(token, primaryStage);
+        			whoseTurn(primaryStage);
+        			won = true;
+        			break;
+        		}
+        	}
 
             char lCrossOne = (cell[0][0].getToken());
             char lCrossTwo = (cell[1][1].getToken());
